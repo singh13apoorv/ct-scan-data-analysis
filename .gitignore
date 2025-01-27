@@ -2,3 +2,6 @@ __pycache__/
 .DS_store
 dicom_data/
 logs/
+.ipynb_checkpoints/
+reorganized_dicom_data/
+dicom_metadata.csv
