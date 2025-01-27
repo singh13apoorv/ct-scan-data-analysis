@@ -9,6 +9,17 @@ from botocore.exceptions import NoCredentialsError, PartialCredentialsError
 AWS_ACCESS_KEY = os.environ.get("AWS_ACCESS_KEY")
 AWS_SECRET_KEY = os.environ.get("AWS_SECRET_KEY")
 
+# AWS bucket name and folder prefix
+S3_BUCKET = os.environ.get("S3_BUCKET")
+FOLDER_PREFIX = os.environ.get("FOLDER_PREFIX")
+
+# Handling error to let user know if bucket or folder prefix is missing.
+if not S3_BUCKET:
+    raise ValueError("S3_BUCKET is missing in environment variable.")
+if not FOLDER_PREFIX:
+    raise ValueError("FOLDER_PREFIX is not set in environment variable.")
+
+
 # configure logging
 LOG_DIR = Path("logs")
 LOG_DIR.mkdir(exist_ok=True)
@@ -56,7 +67,6 @@ def download_dicom_files(
     Returns:
         None
     """
-
     try:
         if aws_access_key and aws_secret_key:
             s3 = boto3.client(
@@ -107,14 +117,19 @@ def download_dicom_files(
 
 if __name__ == "__main__":
     # configuration
-    BUCKET_NAME = "ct-scan-proj-data"
-    PREFIX = "lidc_small_dset/"
+    BUCKET_NAME = S3_BUCKET
+    PREFIX = FOLDER_PREFIX
     LOCAL_DOWNLOAD_DIR = "./dicom_data/"
 
-    download_dicom_files(
-        bucket_name=BUCKET_NAME,
-        prefix=PREFIX,
-        local_dir=LOCAL_DOWNLOAD_DIR,
-        aws_access_key=AWS_ACCESS_KEY,
-        aws_secret_key=AWS_SECRET_KEY,
-    )
+    try:
+        download_dicom_files(
+            bucket_name=BUCKET_NAME,
+            prefix=PREFIX,
+            local_dir=LOCAL_DOWNLOAD_DIR,
+            aws_access_key=AWS_ACCESS_KEY,
+            aws_secret_key=AWS_SECRET_KEY,
+        )
+    except ValueError as ve:
+        logger.error(f"Configuration error: {ve}")
+    except Exception as e:
+        logger.error(f"Unexpected error in main execution: {e}")
