@@ -1,2 +1,4 @@
 __pycache__/
 .DS_store
+dicom_data/
+logs/
